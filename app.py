@@ -556,8 +556,8 @@ elif group.startswith("🎓"):
         ["2-1. 3년 누적 요약",
          "2-2. 연도별 추이",
          "2-3. 경쟁 치열 학과",
-         "2-4. 충원율 높음 (이탈)",
-         "2-5. 충원율 낮음 (안정)",
+         "2-4. 추가합격 많은 학과 (이탈)",
+         "2-5. 추가합격 적은 학과 (안정)",
          "2-6. 학과 심층 분석"],
         horizontal=True, label_visibility="collapsed")
 
@@ -658,18 +658,20 @@ elif group.startswith("🎓"):
                                   key="s2_4_m")
         r = a_unit_high_fill(df, top_n, min_pass)
         rr = r.reset_index()
-        fig = px.bar(rr, x="충원율(%)", y="모집단위명", orientation="h",
+        fig = px.bar(rr, x="추가합격률(%)", y="모집단위명", orientation="h",
                      color="총합격", color_continuous_scale="Oranges",
-                     title=f"충원율 높은 학과 (합격 {min_pass}↑, Top {top_n})",
+                     title=f"추가합격 많은 학과 (합격 {min_pass}↑, Top {top_n})",
                      height=max(400, top_n * 30))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
         st.plotly_chart(fig, use_container_width=True)
-        st.info("💡 **해석**: 충원율이 높다 = 최초합격자 상당수가 다른 대학으로 "
-                "이탈해 2차·3차 충원까지 간다는 뜻입니다.")
+        st.info("💡 **해석**: 추가합격률 = **전체 합격자 중 추가(충원)합격자가 차지하는 비율** "
+                "(대학알리미의 '신입생 충원율'과 다른 지표).  \n"
+                "추가합격이 **많다** = 최초합격자 상당수가 다른 대학으로 "
+                "이탈해 2차·3차 추가합격까지 간다는 뜻입니다.")
         show_result(r)
         if st.button("💾 저장소에 담기", key="s2_4_save"):
-            save_to_store(f"2-4_충원율높음_Top{top_n}", r,
-                          f"충원율 높은 학과 (합격 {min_pass}↑)")
+            save_to_store(f"2-4_추가합격많음_Top{top_n}", r,
+                          f"추가합격 많은 학과 (합격 {min_pass}↑)")
             st.success(f"저장됨 ({len(st.session_state.results)}개)")
 
     elif sub.startswith("2-5"):
@@ -681,18 +683,20 @@ elif group.startswith("🎓"):
                                   key="s2_5_m")
         r = a_unit_low_fill(df, top_n, min_pass)
         rr = r.reset_index()
-        fig = px.bar(rr, x="충원율(%)", y="모집단위명", orientation="h",
+        fig = px.bar(rr, x="추가합격률(%)", y="모집단위명", orientation="h",
                      color="총합격", color_continuous_scale="Greens_r",
-                     title=f"충원율 낮은 학과 (합격 {min_pass}↑, Top {top_n})",
+                     title=f"추가합격 적은 학과 (합격 {min_pass}↑, Top {top_n})",
                      height=max(400, top_n * 30))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
         st.plotly_chart(fig, use_container_width=True)
-        st.info("💡 **해석**: 충원율이 낮다 = 최초합격자 대부분이 등록하는 "
+        st.info("💡 **해석**: 추가합격률 = **전체 합격자 중 추가(충원)합격자가 차지하는 비율** "
+                "(대학알리미의 '신입생 충원율'과 다른 지표).  \n"
+                "추가합격이 **적다** = 최초합격자 대부분이 등록하는 "
                 "안정적으로 마감되는 학과입니다.")
         show_result(r)
         if st.button("💾 저장소에 담기", key="s2_5_save"):
-            save_to_store(f"2-5_충원율낮음_Top{top_n}", r,
-                          f"충원율 낮은 학과 (합격 {min_pass}↑)")
+            save_to_store(f"2-5_추가합격적음_Top{top_n}", r,
+                          f"추가합격 적은 학과 (합격 {min_pass}↑)")
             st.success(f"저장됨 ({len(st.session_state.results)}개)")
 
     else:   # 2-6
@@ -817,7 +821,7 @@ elif group.startswith("🏫"):
             years = sorted([c for c in r.columns
                             if isinstance(c, (int, np.integer))])
             top_plot = r.head(12)[years].T
-            top_plot.index.name = "입시년도"          # ← 이 한 줄 추가
+            top_plot.index.name = "입시년도"
             rr = top_plot.reset_index().melt(
                 id_vars="입시년도",
                 var_name="고등학교명", value_name="지원자")
@@ -843,9 +847,8 @@ elif group.startswith("🏫"):
         else:
             years = sorted([c for c in r.columns
                             if isinstance(c, (int, np.integer))])
-
             top_plot = r.head(12)[years].T
-            top_plot.index.name = "입시년도"          # ← 이 한 줄 추가
+            top_plot.index.name = "입시년도"
             rr = top_plot.reset_index().melt(
                 id_vars="입시년도",
                 var_name="고등학교명", value_name="지원자")

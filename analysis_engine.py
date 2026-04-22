@@ -210,27 +210,29 @@ def a_unit_low_pass_rate(df, top_n=15, min_apply=50):
 
 
 def a_unit_high_fill(df, top_n=20, min_pass=50):
-    """충원율이 높은 학과 (이탈 많음)"""
+    """추가합격 많은 학과 (이탈 많음).
+    추가합격률(%) = 충원합격 / 총합격 * 100  [*대학알리미 '신입생 충원율'과 다른 지표*]"""
     d = df[df["발표합격여부"]].copy()
     g = d.groupby("모집단위명").agg(
         총합격=("성명", "count"),
         최초합격=("합격구분", lambda s: (s == 0).sum()))
     g["충원합격"] = g["총합격"] - g["최초합격"]
-    g["충원율(%)"] = (g["충원합격"] / g["총합격"] * 100).round(1)
+    g["추가합격률(%)"] = (g["충원합격"] / g["총합격"] * 100).round(1)
     g = g[g["총합격"] >= min_pass]
-    return g.sort_values("충원율(%)", ascending=False).head(top_n)
+    return g.sort_values("추가합격률(%)", ascending=False).head(top_n)
 
 
 def a_unit_low_fill(df, top_n=20, min_pass=50):
-    """충원율이 낮은 학과 (안정 마감)"""
+    """추가합격 적은 학과 (안정 마감).
+    추가합격률(%) = 충원합격 / 총합격 * 100  [*대학알리미 '신입생 충원율'과 다른 지표*]"""
     d = df[df["발표합격여부"]].copy()
     g = d.groupby("모집단위명").agg(
         총합격=("성명", "count"),
         최초합격=("합격구분", lambda s: (s == 0).sum()))
     g["충원합격"] = g["총합격"] - g["최초합격"]
-    g["충원율(%)"] = (g["충원합격"] / g["총합격"] * 100).round(1)
+    g["추가합격률(%)"] = (g["충원합격"] / g["총합격"] * 100).round(1)
     g = g[g["총합격"] >= min_pass]
-    return g.sort_values("충원율(%)", ascending=True).head(top_n)
+    return g.sort_values("추가합격률(%)", ascending=True).head(top_n)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
