@@ -252,7 +252,7 @@ with st.sidebar:
 
     if uploaded is not None:
         try:
-            st.session_state.df = load_and_clean(
+            st.session_state.df = load_data(
                 uploaded.getvalue(), uploaded.name)
             st.session_state.filename = uploaded.name
             st.success(f"✅ {len(st.session_state.df):,}건 로드됨")
