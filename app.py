@@ -769,22 +769,50 @@ elif group.startswith("🏫"):
          "3-7. 고교 심층 (검색)"],
         horizontal=True, label_visibility="collapsed")
 
+    # 지역 공통 필터 — 이 탭의 모든 분석에 적용
+    with st.container(border=True):
+        col_rgn, col_info = st.columns([2, 3])
+        with col_rgn:
+            region_filter = st.selectbox(
+                "🗺 지역 필터",
+                ["전체", "강원", "서울", "경기", "인천", "기타지방"],
+                index=0,
+                help="분석 대상을 특정 지역 고교로 한정합니다. "
+                     "'기타지방' = 강원·서울·경기·인천을 제외한 전국")
+        # 필터 적용된 df 생성
+        if region_filter == "전체":
+            df_filt = df
+        elif region_filter == "기타지방":
+            df_filt = df[~df["고교소재지"].isin(["강원", "서울", "경기", "인천"])
+                         & df["고교소재지"].notna()]
+        else:
+            df_filt = df[df["고교소재지"] == region_filter]
+
+        # 대상 고교 수 안내
+        n_schools = df_filt[~df_filt["검정고시여부"]
+                            & df_filt["고등학교명"].notna()]["고등학교명"].nunique()
+        n_records = len(df_filt)
+        with col_info:
+            st.caption(f"**대상 고교 {n_schools:,}개** · 레코드 {n_records:,}건  "
+                       f"— 아래 모든 분석에 공통 적용됩니다")
+
     if sub.startswith("3-1"):
         c1, c2 = st.columns(2)
         with c1:
-            top_n = st.slider("상위 N", 10, 50, 20, step=5, key="s3_1_n")
+            top_n = st.slider("상위 N", 10, 300, 20, step=10, key="s3_1_n")
         with c2:
             chart = st.selectbox("차트 유형",
                 ["가로 막대 (지원·합격·등록)", "산점도 (지원 vs 등록률)"],
                 key="s3_1_c")
 
-        r = a_feeder_apply_top(df, top_n)
+        r = a_feeder_apply_top(df_filt, top_n)
         rr = r.reset_index()
+        rgn_suffix = f" · {region_filter}" if region_filter != "전체" else ""
         if chart.startswith("산점도"):
             fig = px.scatter(rr, x="총지원", y="지원대비등록(%)",
                              size="총등록", hover_name="고등학교명",
                              color="고교소재지",
-                             title=f"지원 규모 vs 등록률 (Top {top_n})",
+                             title=f"지원 규모 vs 등록률 (Top {top_n}{rgn_suffix})",
                              height=520)
         else:
             m = rr.melt(id_vars="고등학교명",
@@ -792,37 +820,41 @@ elif group.startswith("🏫"):
                         var_name="구분", value_name="인원")
             fig = px.bar(m, x="인원", y="고등학교명", color="구분",
                          orientation="h", barmode="group",
-                         title=f"3년 누적 지원자 Top {top_n}",
-                         height=max(400, top_n * 25))
+                         title=f"3년 누적 지원자 Top {top_n}{rgn_suffix}",
+                         height=max(400, min(top_n * 25, 12000)))
             fig.update_layout(yaxis={'categoryorder': 'total ascending'})
         st.plotly_chart(fig, use_container_width=True)
-        show_result(r)
+        show_result(r, height=min(600, max(300, top_n * 35)))
         if st.button("💾 저장소에 담기", key="s3_1_save"):
-            save_to_store(f"3-1_지원Top{top_n}", r, f"지원자 Top {top_n}")
+            save_to_store(f"3-1_지원Top{top_n}{rgn_suffix}", r,
+                          f"지원자 Top {top_n}{rgn_suffix}")
             st.success(f"저장됨 ({len(st.session_state.results)}개)")
 
     elif sub.startswith("3-2"):
-        top_n = st.slider("상위 N", 10, 50, 20, step=5, key="s3_2_n")
-        r = a_feeder_registered_top(df, top_n)
+        top_n = st.slider("상위 N", 10, 300, 20, step=10, key="s3_2_n")
+        rgn_suffix = f" · {region_filter}" if region_filter != "전체" else ""
+        r = a_feeder_registered_top(df_filt, top_n)
         rr = r.reset_index().melt(
             id_vars="고등학교명",
             value_vars=["총지원", "총합격", "총등록"],
             var_name="구분", value_name="인원")
         fig = px.bar(rr, x="인원", y="고등학교명", color="구분",
                      orientation="h", barmode="group",
-                     title=f"3년 누적 등록자 Top {top_n}",
-                     height=max(400, top_n * 25))
+                     title=f"3년 누적 등록자 Top {top_n}{rgn_suffix}",
+                     height=max(400, min(top_n * 25, 12000)))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
         st.plotly_chart(fig, use_container_width=True)
-        show_result(r)
+        show_result(r, height=min(600, max(300, top_n * 35)))
         if st.button("💾 저장소에 담기", key="s3_2_save"):
-            save_to_store(f"3-2_등록Top{top_n}", r, f"등록자 Top {top_n}")
+            save_to_store(f"3-2_등록Top{top_n}{rgn_suffix}", r,
+                          f"등록자 Top {top_n}{rgn_suffix}")
             st.success(f"저장됨 ({len(st.session_state.results)}개)")
 
     elif sub.startswith("3-3"):
-        top_n = st.slider("표시 고교 수 (0=전체)", 0, 50, 20, step=5,
+        top_n = st.slider("표시 고교 수 (0=전체)", 0, 300, 20, step=10,
                           key="s3_3_n")
-        r = a_school_3yr_increase(df, top_n if top_n > 0 else None)
+        rgn_suffix = f" · {region_filter}" if region_filter != "전체" else ""
+        r = a_school_3yr_increase(df_filt, top_n if top_n > 0 else None)
         if len(r) == 0:
             st.info("3년 연속 증가 고교가 없습니다.")
         else:
@@ -835,21 +867,22 @@ elif group.startswith("🏫"):
                 var_name="고등학교명", value_name="지원자")
             fig = px.line(rr, x="입시년도", y="지원자", color="고등학교명",
                           markers=True,
-                          title="3년 연속 증가 Top 12 — 연도별 추이",
+                          title=f"3년 연속 증가 Top 12 — 연도별 추이{rgn_suffix}",
                           height=500)
             st.plotly_chart(fig, use_container_width=True)
             st.info("💡 **해석**: 우리 대학과의 관계가 깊어지는 학교들. "
                     "관리 강화 대상.")
-            show_result(r)
+            show_result(r, height=min(600, max(300, len(r) * 35)))
             if st.button("💾 저장소에 담기", key="s3_3_save"):
-                save_to_store(f"3-3_연속증가_{top_n or '전체'}", r,
-                              "3년 연속 증가")
+                save_to_store(f"3-3_연속증가_{top_n or '전체'}{rgn_suffix}", r,
+                              f"3년 연속 증가{rgn_suffix}")
                 st.success(f"저장됨 ({len(st.session_state.results)}개)")
 
     elif sub.startswith("3-4"):
-        top_n = st.slider("표시 고교 수 (0=전체)", 0, 50, 20, step=5,
+        top_n = st.slider("표시 고교 수 (0=전체)", 0, 300, 20, step=10,
                           key="s3_4_n")
-        r = a_school_3yr_decrease(df, top_n if top_n > 0 else None)
+        rgn_suffix = f" · {region_filter}" if region_filter != "전체" else ""
+        r = a_school_3yr_decrease(df_filt, top_n if top_n > 0 else None)
         if len(r) == 0:
             st.info("3년 연속 감소 고교가 없습니다.")
         else:
@@ -862,14 +895,14 @@ elif group.startswith("🏫"):
                 var_name="고등학교명", value_name="지원자")
             fig = px.line(rr, x="입시년도", y="지원자", color="고등학교명",
                           markers=True,
-                          title="3년 연속 감소 Top 12 — 연도별 추이",
+                          title=f"3년 연속 감소 Top 12 — 연도별 추이{rgn_suffix}",
                           height=500)
             st.plotly_chart(fig, use_container_width=True)
             st.info("💡 **해석**: 이탈 조짐이 있는 학교들. 방문·조사 필요.")
-            show_result(r)
+            show_result(r, height=min(600, max(300, len(r) * 35)))
             if st.button("💾 저장소에 담기", key="s3_4_save"):
-                save_to_store(f"3-4_연속감소_{top_n or '전체'}", r,
-                              "3년 연속 감소")
+                save_to_store(f"3-4_연속감소_{top_n or '전체'}{rgn_suffix}", r,
+                              f"3년 연속 감소{rgn_suffix}")
                 st.success(f"저장됨 ({len(st.session_state.results)}개)")
 
     elif sub.startswith("3-5"):
@@ -878,23 +911,27 @@ elif group.startswith("🏫"):
             th = st.slider("증가 기준 (명 이상)", 5, 50, 15, step=5,
                            key="s3_5_t")
         with c2:
-            top_n = st.slider("상위 N (0=전체)", 0, 50, 20, step=5,
+            top_n = st.slider("상위 N (0=전체)", 0, 300, 20, step=10,
                               key="s3_5_n")
-        r = a_school_surge(df, th, top_n if top_n > 0 else None)
+        rgn_suffix = f" · {region_filter}" if region_filter != "전체" else ""
+        r = a_school_surge(df_filt, th, top_n if top_n > 0 else None)
         if len(r) == 0:
             st.info("조건 불충족")
         else:
-            rr = r.reset_index().head(15)
+            # 차트는 최대 30개까지만 표시 (너무 많으면 가독성↓)
+            chart_n = min(len(r), 30)
+            rr = r.reset_index().head(chart_n)
             fig = px.bar(rr, x="증감", y="고등학교명", orientation="h",
                          color="증감률(%)", color_continuous_scale="Greens",
                          hover_data=["고교소재지", "증감률(%)"],
-                         title=f"전년대비 {th}명↑ 급증 Top 15", height=500)
+                         title=f"전년대비 {th}명↑ 급증 Top {chart_n}{rgn_suffix}",
+                         height=max(500, chart_n * 25))
             fig.update_layout(yaxis={'categoryorder': 'total ascending'})
             st.plotly_chart(fig, use_container_width=True)
-            show_result(r)
+            show_result(r, height=min(600, max(300, len(r) * 35)))
             if st.button("💾 저장소에 담기", key="s3_5_save"):
-                save_to_store(f"3-5_급증_{th}명↑", r,
-                              f"전년대비 {th}명 이상 급증")
+                save_to_store(f"3-5_급증_{th}명↑{rgn_suffix}", r,
+                              f"전년대비 {th}명 이상 급증{rgn_suffix}")
                 st.success(f"저장됨 ({len(st.session_state.results)}개)")
 
     elif sub.startswith("3-6"):
@@ -903,29 +940,33 @@ elif group.startswith("🏫"):
             th = st.slider("감소 기준 (명 이상)", 5, 50, 15, step=5,
                            key="s3_6_t")
         with c2:
-            top_n = st.slider("상위 N (0=전체)", 0, 50, 20, step=5,
+            top_n = st.slider("상위 N (0=전체)", 0, 300, 20, step=10,
                               key="s3_6_n")
-        r = a_school_drop(df, th, top_n if top_n > 0 else None)
+        rgn_suffix = f" · {region_filter}" if region_filter != "전체" else ""
+        r = a_school_drop(df_filt, th, top_n if top_n > 0 else None)
         if len(r) == 0:
             st.info("조건 불충족")
         else:
-            rr = r.reset_index().head(15)
+            chart_n = min(len(r), 30)
+            rr = r.reset_index().head(chart_n)
             fig = px.bar(rr, x="증감", y="고등학교명", orientation="h",
                          color="증감률(%)", color_continuous_scale="Reds_r",
                          hover_data=["고교소재지", "증감률(%)"],
-                         title=f"전년대비 {th}명↓ 급감 Top 15", height=500)
+                         title=f"전년대비 {th}명↓ 급감 Top {chart_n}{rgn_suffix}",
+                         height=max(500, chart_n * 25))
             fig.update_layout(yaxis={'categoryorder': 'total ascending'})
             st.plotly_chart(fig, use_container_width=True)
-            show_result(r)
+            show_result(r, height=min(600, max(300, len(r) * 35)))
             if st.button("💾 저장소에 담기", key="s3_6_save"):
-                save_to_store(f"3-6_급감_{th}명↓", r,
-                              f"전년대비 {th}명 이상 급감")
+                save_to_store(f"3-6_급감_{th}명↓{rgn_suffix}", r,
+                              f"전년대비 {th}명 이상 급감{rgn_suffix}")
                 st.success(f"저장됨 ({len(st.session_state.results)}개)")
 
     else:   # 3-7
         keyword = st.text_input("고교 이름 검색 (일부만 입력 가능)",
                                  placeholder="예: 강릉, 광문, 판곡")
-        all_schools = sorted([s for s in df["고등학교명"].dropna().unique()
+        # 검색 후보는 지역 필터 반영
+        all_schools = sorted([s for s in df_filt["고등학교명"].dropna().unique()
                               if "검정고시" not in str(s)])
         if keyword:
             matched = [s for s in all_schools if keyword in str(s)]
@@ -933,11 +974,13 @@ elif group.startswith("🏫"):
             matched = all_schools
 
         if len(matched) == 0:
-            st.warning("일치하는 학교가 없습니다.")
+            st.warning(f"일치하는 학교가 없습니다 "
+                       f"(현재 지역 필터: {region_filter}).")
         else:
             school = st.selectbox(
                 f"결과 ({len(matched)}개)",
-                matched[:200] if len(matched) > 200 else matched)
+                matched[:300] if len(matched) > 300 else matched)
+            # 실제 심층 분석은 df 전체로 (해당 학교의 모든 레코드 사용)
             res = a_deep_school(df, school)
             if res:
                 ry = res["by_year"].reset_index().melt(
