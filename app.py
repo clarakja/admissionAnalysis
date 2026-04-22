@@ -843,7 +843,9 @@ elif group.startswith("🏫"):
         else:
             years = sorted([c for c in r.columns
                             if isinstance(c, (int, np.integer))])
+
             top_plot = r.head(12)[years].T
+            top_plot.index.name = "입시년도"          # ← 이 한 줄 추가
             rr = top_plot.reset_index().melt(
                 id_vars="입시년도",
                 var_name="고등학교명", value_name="지원자")
