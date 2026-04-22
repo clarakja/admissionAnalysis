@@ -223,6 +223,25 @@ def kpi_card_html(title: str, value, delta=None, unit=""):
 </div>"""
 
 
+def tune_colorbar(fig, title: str, subtitle: str = "진할수록 많음"):
+    """가로 막대 차트의 우측 색 범례 제목을 명확하게 만드는 헬퍼.
+
+    예: tune_colorbar(fig, "총등록자 수", "진할수록 많음")
+        → 범례 위에 '총등록자 수' 가 굵게, 그 아래 '진할수록 많음' 회색으로
+    """
+    fig.update_layout(
+        coloraxis_colorbar=dict(
+            title=dict(
+                text=f"<b>{title}</b><br><span style='font-size:0.85em;"
+                     f"color:gray'>{subtitle}</span>",
+                side="top",
+            ),
+            thickness=14,
+        )
+    )
+    return fig
+
+
 def save_to_store(key: str, df: pd.DataFrame, description: str = ""):
     """분석 결과를 세션 저장소에 담기"""
     st.session_state.results[key] = {
@@ -644,12 +663,12 @@ elif group.startswith("🎓"):
         r = a_unit_low_pass_rate(df, top_n, min_apply)
         rr = r.reset_index()
         fig = px.bar(rr, x="합격률(%)", y="모집단위명", orientation="h",
-                     color="지원", color_continuous_scale="Reds_r",
+                     color="지원", color_continuous_scale="Reds",
                      title=(f"합격률 낮은 학과 (지원 {min_apply}명↑, Top {top_n})"
-                            f"<br><sup style='color:gray'>↑ 위쪽일수록 경쟁 치열 · "
-                            f"막대 색 = 지원자 수 (진할수록 많음)</sup>"),
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 경쟁 치열</sup>"),
                      height=max(400, top_n * 30))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
+        tune_colorbar(fig, "지원자 수", "진할수록 많음 (규모 큰 곳)")
         st.plotly_chart(fig, use_container_width=True)
         st.info("💡 **해석**: 합격률이 낮을수록 경쟁이 치열한 학과입니다. "
                 "입시 커트라인이 높고 성적 우수자가 지원합니다.")
@@ -671,10 +690,10 @@ elif group.startswith("🎓"):
         fig = px.bar(rr, x="추가합격률(%)", y="모집단위명", orientation="h",
                      color="총합격", color_continuous_scale="Oranges",
                      title=(f"추가합격 많은 학과 (합격 {min_pass}↑, Top {top_n})"
-                            f"<br><sup style='color:gray'>↑ 위쪽일수록 이탈 많음 · "
-                            f"막대 색 = 총합격자 수 (진할수록 많음)</sup>"),
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 이탈 많음</sup>"),
                      height=max(400, top_n * 30))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
+        tune_colorbar(fig, "총합격자 수", "진할수록 많음")
         st.plotly_chart(fig, use_container_width=True)
         st.info("💡 **해석**: 추가합격률 = **전체 합격자 중 추가(충원)합격자가 차지하는 비율** "
                 "(대학알리미의 '신입생 충원율'과 다른 지표).  \n"
@@ -696,12 +715,12 @@ elif group.startswith("🎓"):
         r = a_unit_low_fill(df, top_n, min_pass)
         rr = r.reset_index()
         fig = px.bar(rr, x="추가합격률(%)", y="모집단위명", orientation="h",
-                     color="총합격", color_continuous_scale="Greens_r",
+                     color="총합격", color_continuous_scale="Greens",
                      title=(f"추가합격 적은 학과 (합격 {min_pass}↑, Top {top_n})"
-                            f"<br><sup style='color:gray'>↑ 위쪽일수록 안정 마감 · "
-                            f"막대 색 = 총합격자 수 (진할수록 많음)</sup>"),
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 안정 마감</sup>"),
                      height=max(400, top_n * 30))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
+        tune_colorbar(fig, "총합격자 수", "진할수록 많음")
         st.plotly_chart(fig, use_container_width=True)
         st.info("💡 **해석**: 추가합격률 = **전체 합격자 중 추가(충원)합격자가 차지하는 비율** "
                 "(대학알리미의 '신입생 충원율'과 다른 지표).  \n"
@@ -933,6 +952,7 @@ elif group.startswith("🏫"):
                          title=f"전년대비 {th}명↑ 급증 Top {chart_n}{rgn_suffix}",
                          height=max(500, chart_n * 25))
             fig.update_layout(yaxis={'categoryorder': 'total ascending'})
+            tune_colorbar(fig, "증감률(%)", "진할수록 증가율↑")
             st.plotly_chart(fig, use_container_width=True)
             show_result(r, height=min(600, max(300, len(r) * 35)))
             if st.button("💾 저장소에 담기", key="s3_5_save"):
@@ -961,6 +981,7 @@ elif group.startswith("🏫"):
                          title=f"전년대비 {th}명↓ 급감 Top {chart_n}{rgn_suffix}",
                          height=max(500, chart_n * 25))
             fig.update_layout(yaxis={'categoryorder': 'total ascending'})
+            tune_colorbar(fig, "증감률(%)", "진할수록 감소율 큼")
             st.plotly_chart(fig, use_container_width=True)
             show_result(r, height=min(600, max(300, len(r) * 35)))
             if st.button("💾 저장소에 담기", key="s3_6_save"):
@@ -1112,10 +1133,10 @@ elif group.startswith("🎯"):
                      color="총지원", color_continuous_scale="Oranges",
                      hover_data=["총합격", "총등록", "고교소재지", "설립구분"],
                      title=(f"전환율 개선 대상 (지원 {min_apply}↑, 차트 상위 {chart_n} / 표 {len(r)})"
-                            f"<br><sup style='color:gray'>↑ 위쪽일수록 등록 전환 안 됨 · "
-                            f"막대 색 = 총지원자 수 (진할수록 많음, 규모 큰 곳이 우선순위↑)</sup>"),
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 등록 전환 안 됨</sup>"),
                      height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
+        tune_colorbar(fig, "총지원자 수", "진할수록 많음 (규모↑ = 우선순위↑)")
         st.plotly_chart(fig, use_container_width=True)
         st.warning("⚠ **해석**: 많이 지원하는데 등록이 잘 안 되는 학교들. "
                    "왜 이탈하는지 방문 조사·원인 파악이 필요합니다.")
@@ -1163,10 +1184,10 @@ elif group.startswith("🎯"):
                      color="총등록", color_continuous_scale="Greens",
                      hover_data=["총지원", "총합격", "고교소재지"],
                      title=(f"전환율 Top {top_n} (합격 {min_pass}↑, 차트 상위 {chart_n})"
-                            f"<br><sup style='color:gray'>↑ 위쪽일수록 충성도 높음 · "
-                            f"막대 색 = 총등록자 수 (진할수록 많음, 많이 오는 곳이 가치↑)</sup>"),
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 충성도 높음</sup>"),
                      height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
+        tune_colorbar(fig, "총등록자 수", "진할수록 많음 (가치↑)")
         st.plotly_chart(fig, use_container_width=True)
         st.success("💚 **해석**: 합격하면 반드시 오는 학교들. "
                    "우리 대학에 대한 충성도가 높음. 관계 유지·심화.")
@@ -1190,10 +1211,10 @@ elif group.startswith("🎯"):
                      color="총합격", color_continuous_scale="Reds",
                      hover_data=["총지원", "총등록", "고교소재지"],
                      title=(f"전환율 Bottom {top_n} (합격 {min_pass}↑, 차트 상위 {chart_n})"
-                            f"<br><sup style='color:gray'>↑ 위쪽일수록 이탈 심함 · "
-                            f"막대 색 = 총합격자 수 (진할수록 많음, 이탈 규모 큼)</sup>"),
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 이탈 심함</sup>"),
                      height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
+        tune_colorbar(fig, "총합격자 수", "진할수록 많음 (이탈 규모↑)")
         st.plotly_chart(fig, use_container_width=True)
         st.error("🚨 **해석**: 합격시켜도 이탈하는 학교들. "
                  "타 대학과 중복 합격 후 선택받지 못하는 원인 파악 필요.")
@@ -1217,9 +1238,11 @@ elif group.startswith("🎯"):
                      orientation="h", color="규모대비등록률(%)",
                      color_continuous_scale="Viridis",
                      hover_data=["총지원", "총등록", "고3학년수", "고교소재지"],
-                     title=f"규모 대비 지원율 (고3 {min_size}↑, Top {top_n}, 차트 상위 {chart_n})",
+                     title=(f"규모 대비 지원율 (고3 {min_size}↑, Top {top_n}, 차트 상위 {chart_n})"
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 지원율↑</sup>"),
                      height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
+        tune_colorbar(fig, "규모대비등록률(%)", "노란색↑·보라색↓")
         st.plotly_chart(fig, use_container_width=True)
         show_result(r, height=min(600, max(300, len(r) * 35)))
         if st.button("💾 저장소에 담기", key="s4_6_save"):
@@ -1241,9 +1264,11 @@ elif group.startswith("🎯"):
                      orientation="h", color="규모대비지원율(%)",
                      color_continuous_scale="Viridis",
                      hover_data=["총지원", "총등록", "고3학년수", "고교소재지"],
-                     title=f"규모 대비 등록률 (고3 {min_size}↑, Top {top_n}, 차트 상위 {chart_n})",
+                     title=(f"규모 대비 등록률 (고3 {min_size}↑, Top {top_n}, 차트 상위 {chart_n})"
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 등록률↑</sup>"),
                      height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
+        tune_colorbar(fig, "규모대비지원율(%)", "노란색↑·보라색↓")
         st.plotly_chart(fig, use_container_width=True)
         show_result(r, height=min(600, max(300, len(r) * 35)))
         if st.button("💾 저장소에 담기", key="s4_7_save"):
