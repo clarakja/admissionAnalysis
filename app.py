@@ -65,124 +65,132 @@ st.markdown("""
 #  분석 로직은 analysis_engine.py 에 있습니다.
 #  여기서는 Streamlit 캐시를 적용한 wrapper 함수들을 만듭니다.
 #
+import hashlib
 import analysis_engine as ae
+
+# 엔진 모듈 소스의 해시 — 엔진이 바뀌면 캐시가 자동 무효화됨
+try:
+    with open(ae.__file__, "rb") as _f:
+        ENGINE_VERSION = hashlib.md5(_f.read()).hexdigest()[:8]
+except Exception:
+    ENGINE_VERSION = "dev"
 
 # 데이터 로드 — 파일 바이트 기준으로 캐시 (같은 파일은 한 번만 파싱)
 @st.cache_data(show_spinner="📊 데이터 로드·정제 중...")
-def load_data(file_bytes: bytes, filename: str) -> pd.DataFrame:
+def load_data(file_bytes: bytes, filename: str, _v: str = ENGINE_VERSION):
     return ae.load_and_clean(file_bytes)
 
 
 # 분석 함수들 — 모두 @st.cache_data 로 래핑
-#   DataFrame 해시는 Streamlit 이 자동 처리
+#   _v 파라미터로 엔진 버전을 캐시 키에 섞음 (엔진 수정 시 자동 무효화)
 @st.cache_data
-def a_overview_by_year(df): return ae.a_overview_by_year(df)
+def a_overview_by_year(df, _v=ENGINE_VERSION): return ae.a_overview_by_year(df)
 
 @st.cache_data
-def a_overview_year_admtype(df): return ae.a_overview_year_admtype(df)
+def a_overview_year_admtype(df, _v=ENGINE_VERSION): return ae.a_overview_year_admtype(df)
 
 @st.cache_data
-def a_region_by_year(df): return ae.a_region_by_year(df)
+def a_region_by_year(df, _v=ENGINE_VERSION): return ae.a_region_by_year(df)
 
 @st.cache_data
-def a_school_type_by_year(df): return ae.a_school_type_by_year(df)
+def a_school_type_by_year(df, _v=ENGINE_VERSION): return ae.a_school_type_by_year(df)
 
 @st.cache_data
-def a_school_establishment_by_year(df): return ae.a_school_establishment_by_year(df)
+def a_school_establishment_by_year(df, _v=ENGINE_VERSION): return ae.a_school_establishment_by_year(df)
 
 @st.cache_data
-def a_admission_type_by_year(df): return ae.a_admission_type_by_year(df)
+def a_admission_type_by_year(df, _v=ENGINE_VERSION): return ae.a_admission_type_by_year(df)
 
 @st.cache_data
-def a_unit_3year_total(df): return ae.a_unit_3year_total(df)
+def a_unit_3year_total(df, _v=ENGINE_VERSION): return ae.a_unit_3year_total(df)
 
 @st.cache_data
-def a_unit_by_year(df): return ae.a_unit_by_year(df)
+def a_unit_by_year(df, _v=ENGINE_VERSION): return ae.a_unit_by_year(df)
 
 @st.cache_data
-def a_unit_low_pass_rate(df, top_n, min_apply):
+def a_unit_low_pass_rate(df, top_n, min_apply, _v=ENGINE_VERSION):
     return ae.a_unit_low_pass_rate(df, top_n, min_apply)
 
 @st.cache_data
-def a_unit_high_fill(df, top_n, min_pass):
+def a_unit_high_fill(df, top_n, min_pass, _v=ENGINE_VERSION):
     return ae.a_unit_high_fill(df, top_n, min_pass)
 
 @st.cache_data
-def a_unit_low_fill(df, top_n, min_pass):
+def a_unit_low_fill(df, top_n, min_pass, _v=ENGINE_VERSION):
     return ae.a_unit_low_fill(df, top_n, min_pass)
 
 @st.cache_data
-def a_feeder_apply_top(df, top_n): return ae.a_feeder_apply_top(df, top_n)
+def a_feeder_apply_top(df, top_n, _v=ENGINE_VERSION): return ae.a_feeder_apply_top(df, top_n)
 
 @st.cache_data
-def a_feeder_registered_top(df, top_n): return ae.a_feeder_registered_top(df, top_n)
+def a_feeder_registered_top(df, top_n, _v=ENGINE_VERSION): return ae.a_feeder_registered_top(df, top_n)
 
 @st.cache_data
-def a_school_3yr_increase(df, top_n): return ae.a_school_3yr_increase(df, top_n)
+def a_school_3yr_increase(df, top_n, _v=ENGINE_VERSION): return ae.a_school_3yr_increase(df, top_n)
 
 @st.cache_data
-def a_school_3yr_decrease(df, top_n): return ae.a_school_3yr_decrease(df, top_n)
+def a_school_3yr_decrease(df, top_n, _v=ENGINE_VERSION): return ae.a_school_3yr_decrease(df, top_n)
 
 @st.cache_data
-def a_school_surge(df, threshold, top_n): return ae.a_school_surge(df, threshold, top_n)
+def a_school_surge(df, threshold, top_n, _v=ENGINE_VERSION): return ae.a_school_surge(df, threshold, top_n)
 
 @st.cache_data
-def a_school_drop(df, threshold, top_n): return ae.a_school_drop(df, threshold, top_n)
+def a_school_drop(df, threshold, top_n, _v=ENGINE_VERSION): return ae.a_school_drop(df, threshold, top_n)
 
 @st.cache_data
-def a_gap_high_apply_low_reg(df, top_n, min_apply):
+def a_gap_high_apply_low_reg(df, top_n, min_apply, _v=ENGINE_VERSION):
     return ae.a_gap_high_apply_low_reg(df, top_n, min_apply)
 
 @st.cache_data
-def a_gap_low_apply_high_reg(df, top_n, min_reg):
+def a_gap_low_apply_high_reg(df, top_n, min_reg, _v=ENGINE_VERSION):
     return ae.a_gap_low_apply_high_reg(df, top_n, min_reg)
 
 @st.cache_data
-def a_conversion_high(df, top_n, min_pass):
+def a_conversion_high(df, top_n, min_pass, _v=ENGINE_VERSION):
     return ae.a_conversion_high(df, top_n, min_pass)
 
 @st.cache_data
-def a_conversion_low(df, top_n, min_pass):
+def a_conversion_low(df, top_n, min_pass, _v=ENGINE_VERSION):
     return ae.a_conversion_low(df, top_n, min_pass)
 
 @st.cache_data
-def a_school_matrix(df, min_apply):
+def a_school_matrix(df, min_apply, _v=ENGINE_VERSION):
     return ae.a_school_matrix(df, min_apply)
 
 @st.cache_data
-def a_size_apply_ratio(df, top_n, min_size):
+def a_size_apply_ratio(df, top_n, min_size, _v=ENGINE_VERSION):
     return ae.a_size_apply_ratio(df, top_n, min_size)
 
 @st.cache_data
-def a_size_reg_ratio(df, top_n, min_size):
+def a_size_reg_ratio(df, top_n, min_size, _v=ENGINE_VERSION):
     return ae.a_size_reg_ratio(df, top_n, min_size)
 
 @st.cache_data
-def a_funnel_overall(df): return ae.a_funnel_overall(df)
+def a_funnel_overall(df, _v=ENGINE_VERSION): return ae.a_funnel_overall(df)
 
 @st.cache_data
-def a_funnel_by_year(df): return ae.a_funnel_by_year(df)
+def a_funnel_by_year(df, _v=ENGINE_VERSION): return ae.a_funnel_by_year(df)
 
 @st.cache_data
-def a_funnel_by_region(df): return ae.a_funnel_by_region(df)
+def a_funnel_by_region(df, _v=ENGINE_VERSION): return ae.a_funnel_by_region(df)
 
 @st.cache_data
-def a_funnel_by_admtype(df, top_n): return ae.a_funnel_by_admtype(df, top_n)
+def a_funnel_by_admtype(df, top_n, _v=ENGINE_VERSION): return ae.a_funnel_by_admtype(df, top_n)
 
 @st.cache_data
-def a_fill_round(df): return ae.a_fill_round(df)
+def a_fill_round(df, _v=ENGINE_VERSION): return ae.a_fill_round(df)
 
 @st.cache_data
-def a_deep_unit(df, unit_name): return ae.a_deep_unit(df, unit_name)
+def a_deep_unit(df, unit_name, _v=ENGINE_VERSION): return ae.a_deep_unit(df, unit_name)
 
 @st.cache_data
-def a_deep_school(df, school_name): return ae.a_deep_school(df, school_name)
+def a_deep_school(df, school_name, _v=ENGINE_VERSION): return ae.a_deep_school(df, school_name)
 
 @st.cache_data
-def a_deep_region(df, region): return ae.a_deep_region(df, region)
+def a_deep_region(df, region, _v=ENGINE_VERSION): return ae.a_deep_region(df, region)
 
 @st.cache_data
-def a_insight_report(df): return ae.a_insight_report(df)
+def a_insight_report(df, _v=ENGINE_VERSION): return ae.a_insight_report(df)
 
 # 홈 전용 헬퍼는 캐시 불필요 (단순 계산)
 def home_kpis(df): return ae.home_kpis(df)
