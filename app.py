@@ -645,7 +645,9 @@ elif group.startswith("🎓"):
         rr = r.reset_index()
         fig = px.bar(rr, x="합격률(%)", y="모집단위명", orientation="h",
                      color="지원", color_continuous_scale="Reds_r",
-                     title=f"합격률 낮은 학과 (지원 {min_apply}명↑, Top {top_n})",
+                     title=(f"합격률 낮은 학과 (지원 {min_apply}명↑, Top {top_n})"
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 경쟁 치열 · "
+                            f"↓ 아래쪽일수록 상대적 여유</sup>"),
                      height=max(400, top_n * 30))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
         st.plotly_chart(fig, use_container_width=True)
@@ -668,7 +670,9 @@ elif group.startswith("🎓"):
         rr = r.reset_index()
         fig = px.bar(rr, x="추가합격률(%)", y="모집단위명", orientation="h",
                      color="총합격", color_continuous_scale="Oranges",
-                     title=f"추가합격 많은 학과 (합격 {min_pass}↑, Top {top_n})",
+                     title=(f"추가합격 많은 학과 (합격 {min_pass}↑, Top {top_n})"
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 이탈 많음 · "
+                            f"↓ 아래쪽일수록 상대적 안정</sup>"),
                      height=max(400, top_n * 30))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
         st.plotly_chart(fig, use_container_width=True)
@@ -693,7 +697,9 @@ elif group.startswith("🎓"):
         rr = r.reset_index()
         fig = px.bar(rr, x="추가합격률(%)", y="모집단위명", orientation="h",
                      color="총합격", color_continuous_scale="Greens_r",
-                     title=f"추가합격 적은 학과 (합격 {min_pass}↑, Top {top_n})",
+                     title=(f"추가합격 적은 학과 (합격 {min_pass}↑, Top {top_n})"
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 안정 마감 · "
+                            f"↓ 아래쪽일수록 상대적 이탈</sup>"),
                      height=max(400, top_n * 30))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
         st.plotly_chart(fig, use_container_width=True)
@@ -1105,7 +1111,9 @@ elif group.startswith("🎯"):
         fig = px.bar(rr, x="지원대비등록(%)", y="고등학교명", orientation="h",
                      color="총지원", color_continuous_scale="Oranges",
                      hover_data=["총합격", "총등록", "고교소재지", "설립구분"],
-                     title=f"전환율 개선 대상 (지원 {min_apply}↑, 차트 상위 {chart_n} / 표 {len(r)})",
+                     title=(f"전환율 개선 대상 (지원 {min_apply}↑, 차트 상위 {chart_n} / 표 {len(r)})"
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 등록 전환 안 됨 · "
+                            f"↓ 아래쪽일수록 상대적으로 나은 편</sup>"),
                      height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
         st.plotly_chart(fig, use_container_width=True)
@@ -1154,7 +1162,9 @@ elif group.startswith("🎯"):
         fig = px.bar(rr, x="등록률(%)", y="고등학교명", orientation="h",
                      color="총등록", color_continuous_scale="Greens",
                      hover_data=["총지원", "총합격", "고교소재지"],
-                     title=f"전환율 Top {top_n} (합격 {min_pass}↑, 차트 상위 {chart_n})",
+                     title=(f"전환율 Top {top_n} (합격 {min_pass}↑, 차트 상위 {chart_n})"
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 충성도 높음 · "
+                            f"↓ 아래쪽일수록 상대적 낮음</sup>"),
                      height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
         st.plotly_chart(fig, use_container_width=True)
@@ -1179,7 +1189,9 @@ elif group.startswith("🎯"):
         fig = px.bar(rr, x="등록률(%)", y="고등학교명", orientation="h",
                      color="총합격", color_continuous_scale="Reds",
                      hover_data=["총지원", "총등록", "고교소재지"],
-                     title=f"전환율 Bottom {top_n} (합격 {min_pass}↑, 차트 상위 {chart_n})",
+                     title=(f"전환율 Bottom {top_n} (합격 {min_pass}↑, 차트 상위 {chart_n})"
+                            f"<br><sup style='color:gray'>↑ 위쪽일수록 이탈 심함 · "
+                            f"↓ 아래쪽일수록 상대적 덜함</sup>"),
                      height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
         st.plotly_chart(fig, use_container_width=True)
