@@ -1095,22 +1095,23 @@ elif group.startswith("🎯"):
     elif sub.startswith("4-2"):
         c1, c2 = st.columns(2)
         with c1:
-            top_n = st.slider("상위 N", 10, 50, 20, step=5, key="s4_2_n")
+            top_n = st.slider("상위 N", 10, 100, 20, step=5, key="s4_2_n")
         with c2:
             min_apply = st.slider("최소 지원자", 10, 100, 30, step=5,
                                    key="s4_2_m")
         r = a_gap_high_apply_low_reg(df, top_n, min_apply)
-        rr = r.reset_index()
+        chart_n = min(len(r), 30)
+        rr = r.head(chart_n).reset_index()
         fig = px.bar(rr, x="지원대비등록(%)", y="고등학교명", orientation="h",
                      color="총지원", color_continuous_scale="Oranges",
                      hover_data=["총합격", "총등록", "고교소재지", "설립구분"],
-                     title=f"전환율 개선 대상 (지원 {min_apply}↑, Top {top_n})",
-                     height=max(400, top_n * 25))
+                     title=f"전환율 개선 대상 (지원 {min_apply}↑, 차트 상위 {chart_n} / 표 {len(r)})",
+                     height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
         st.plotly_chart(fig, use_container_width=True)
         st.warning("⚠ **해석**: 많이 지원하는데 등록이 잘 안 되는 학교들. "
                    "왜 이탈하는지 방문 조사·원인 파악이 필요합니다.")
-        show_result(r)
+        show_result(r, height=min(600, max(300, len(r) * 35)))
         if st.button("💾 저장소에 담기", key="s4_2_save"):
             save_to_store(f"4-2_전환율개선_Top{top_n}", r,
                           f"전환율 개선 대상 (지원 {min_apply}↑)")
@@ -1119,7 +1120,7 @@ elif group.startswith("🎯"):
     elif sub.startswith("4-3"):
         c1, c2 = st.columns(2)
         with c1:
-            top_n = st.slider("상위 N", 10, 50, 20, step=5, key="s4_3_n")
+            top_n = st.slider("상위 N", 10, 100, 20, step=5, key="s4_3_n")
         with c2:
             min_reg = st.slider("최소 등록자", 1, 20, 3, step=1, key="s4_3_m")
         r = a_gap_low_apply_high_reg(df, top_n, min_reg)
@@ -1134,7 +1135,7 @@ elif group.startswith("🎯"):
         st.success("✨ **해석**: 지원은 적지만 등록률이 높은 학교들. "
                    "우리 대학에 관심 있는 학생들이 많다는 뜻. "
                    "홍보를 강화하면 즉시 성과가 납니다.")
-        show_result(r)
+        show_result(r, height=min(600, max(300, len(r) * 35)))
         if st.button("💾 저장소에 담기", key="s4_3_save"):
             save_to_store(f"4-3_잠재력_Top{top_n}", r,
                           f"잠재력 발굴 (등록 {min_reg}↑)")
@@ -1143,22 +1144,23 @@ elif group.startswith("🎯"):
     elif sub.startswith("4-4"):
         c1, c2 = st.columns(2)
         with c1:
-            top_n = st.slider("상위 N", 10, 50, 20, step=5, key="s4_4_n")
+            top_n = st.slider("상위 N", 10, 100, 20, step=5, key="s4_4_n")
         with c2:
             min_pass = st.slider("최소 합격자", 5, 50, 10, step=1,
                                   key="s4_4_m")
         r = a_conversion_high(df, top_n, min_pass)
-        rr = r.reset_index()
+        chart_n = min(len(r), 30)
+        rr = r.head(chart_n).reset_index()
         fig = px.bar(rr, x="등록률(%)", y="고등학교명", orientation="h",
                      color="총등록", color_continuous_scale="Greens",
                      hover_data=["총지원", "총합격", "고교소재지"],
-                     title=f"전환율 Top {top_n} (합격 {min_pass}↑)",
-                     height=max(400, top_n * 25))
+                     title=f"전환율 Top {top_n} (합격 {min_pass}↑, 차트 상위 {chart_n})",
+                     height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
         st.plotly_chart(fig, use_container_width=True)
         st.success("💚 **해석**: 합격하면 반드시 오는 학교들. "
                    "우리 대학에 대한 충성도가 높음. 관계 유지·심화.")
-        show_result(r)
+        show_result(r, height=min(600, max(300, len(r) * 35)))
         if st.button("💾 저장소에 담기", key="s4_4_save"):
             save_to_store(f"4-4_전환율Top{top_n}", r,
                           f"합격→등록 전환율 Top {top_n}")
@@ -1167,22 +1169,23 @@ elif group.startswith("🎯"):
     elif sub.startswith("4-5"):
         c1, c2 = st.columns(2)
         with c1:
-            top_n = st.slider("상위 N", 10, 50, 20, step=5, key="s4_5_n")
+            top_n = st.slider("상위 N", 10, 100, 20, step=5, key="s4_5_n")
         with c2:
             min_pass = st.slider("최소 합격자", 5, 50, 10, step=1,
                                   key="s4_5_m")
         r = a_conversion_low(df, top_n, min_pass)
-        rr = r.reset_index()
+        chart_n = min(len(r), 30)
+        rr = r.head(chart_n).reset_index()
         fig = px.bar(rr, x="등록률(%)", y="고등학교명", orientation="h",
                      color="총합격", color_continuous_scale="Reds",
                      hover_data=["총지원", "총등록", "고교소재지"],
-                     title=f"전환율 Bottom {top_n} (합격 {min_pass}↑)",
-                     height=max(400, top_n * 25))
+                     title=f"전환율 Bottom {top_n} (합격 {min_pass}↑, 차트 상위 {chart_n})",
+                     height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total descending'})
         st.plotly_chart(fig, use_container_width=True)
         st.error("🚨 **해석**: 합격시켜도 이탈하는 학교들. "
                  "타 대학과 중복 합격 후 선택받지 못하는 원인 파악 필요.")
-        show_result(r)
+        show_result(r, height=min(600, max(300, len(r) * 35)))
         if st.button("💾 저장소에 담기", key="s4_5_save"):
             save_to_store(f"4-5_전환율Bottom{top_n}", r,
                           f"합격→등록 전환율 Bottom {top_n}")
@@ -1191,21 +1194,22 @@ elif group.startswith("🎯"):
     elif sub.startswith("4-6"):
         c1, c2 = st.columns(2)
         with c1:
-            top_n = st.slider("상위 N", 10, 50, 20, step=5, key="s4_6_n")
+            top_n = st.slider("상위 N", 10, 100, 20, step=5, key="s4_6_n")
         with c2:
             min_size = st.slider("최소 고3학년수", 20, 200, 50, step=10,
                                   key="s4_6_m")
         r = a_size_apply_ratio(df, top_n, min_size)
-        rr = r.reset_index()
+        chart_n = min(len(r), 30)
+        rr = r.head(chart_n).reset_index()
         fig = px.bar(rr, x="규모대비지원율(%)", y="고등학교명",
                      orientation="h", color="규모대비등록률(%)",
                      color_continuous_scale="Viridis",
                      hover_data=["총지원", "총등록", "고3학년수", "고교소재지"],
-                     title=f"규모 대비 지원율 (고3 {min_size}↑, Top {top_n})",
-                     height=max(400, top_n * 25))
+                     title=f"규모 대비 지원율 (고3 {min_size}↑, Top {top_n}, 차트 상위 {chart_n})",
+                     height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
         st.plotly_chart(fig, use_container_width=True)
-        show_result(r)
+        show_result(r, height=min(600, max(300, len(r) * 35)))
         if st.button("💾 저장소에 담기", key="s4_6_save"):
             save_to_store(f"4-6_규모대비지원율_Top{top_n}", r,
                           f"규모 대비 지원율 Top {top_n}")
@@ -1214,21 +1218,22 @@ elif group.startswith("🎯"):
     else:   # 4-7
         c1, c2 = st.columns(2)
         with c1:
-            top_n = st.slider("상위 N", 10, 50, 20, step=5, key="s4_7_n")
+            top_n = st.slider("상위 N", 10, 100, 20, step=5, key="s4_7_n")
         with c2:
             min_size = st.slider("최소 고3학년수", 20, 200, 50, step=10,
                                   key="s4_7_m")
         r = a_size_reg_ratio(df, top_n, min_size)
-        rr = r.reset_index()
+        chart_n = min(len(r), 30)
+        rr = r.head(chart_n).reset_index()
         fig = px.bar(rr, x="규모대비등록률(%)", y="고등학교명",
                      orientation="h", color="규모대비지원율(%)",
                      color_continuous_scale="Viridis",
                      hover_data=["총지원", "총등록", "고3학년수", "고교소재지"],
-                     title=f"규모 대비 등록률 (고3 {min_size}↑, Top {top_n})",
-                     height=max(400, top_n * 25))
+                     title=f"규모 대비 등록률 (고3 {min_size}↑, Top {top_n}, 차트 상위 {chart_n})",
+                     height=max(400, chart_n * 25))
         fig.update_layout(yaxis={'categoryorder': 'total ascending'})
         st.plotly_chart(fig, use_container_width=True)
-        show_result(r)
+        show_result(r, height=min(600, max(300, len(r) * 35)))
         if st.button("💾 저장소에 담기", key="s4_7_save"):
             save_to_store(f"4-7_규모대비등록률_Top{top_n}", r,
                           f"규모 대비 등록률 Top {top_n}")
